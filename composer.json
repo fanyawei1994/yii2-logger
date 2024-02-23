@@ -1,0 +1,17 @@
+{
+    "name": "fanyawei/yii2-logger",
+    "description": "yii2.0下一些日志记录扩展",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Fanyawei\\Yii2Logger\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "fanyawei",
+            "email": "1571306525@qq.com"
+        }
+    ],
+    "require": {}
+}
