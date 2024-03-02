@@ -6,6 +6,7 @@
 
 namespace Fanyawei\Yii2Logger;
 
+use Fanyawei\Yii2Logger\DebugLogger\DebugLoggerTarget;
 use yii\base\Component;
 use yii\log\Logger;
 use Yii;
@@ -29,7 +30,6 @@ class DebugLogger extends Component
 
     /**
      * 将本组件生成的debug日志记录到数据库中以便后续分析
-     * @param string $category
      * @return void
      */
     protected function addLogTarget():void
@@ -39,20 +39,15 @@ class DebugLogger extends Component
                 Yii::$app->log->traceLevel = 2;
             }
             Yii::$app->log->targets[$this->logTargetName] = Yii::createObject([
-                'class' => 'yii\log\DbTarget',
+                'class' => DebugLoggerTarget::class,
                 'logTable' => $this->logTable,
                 'categories' => [],
                 'prefix' => function ($message) {
                     if (!isset($message[4][1])) {
                         return '#';
                     }
-                    $userID = 0;
-                    if (!empty(Yii::$app->user->id)) {
-                        $userID = Yii::$app->user->id;
-                    }
                     $trace = $message[4][1];
                     return implode('#', [
-                        $userID,
                         $trace['file'],
                         $trace['line'],
                     ]);
