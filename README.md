@@ -38,3 +38,80 @@ Yii::$app->debugLogger->warning(333);
 Yii::$app->debugLogger->error(444);
 ```
 
+#### 2,请求错误日志记录
+
+- main.php
+```php
+[
+        'log' => [
+            'traceLevel' => YII_DEBUG ? 3 : 0,
+            'targets' => [
+                [
+                    'class' => \Fanyawei\Yii2Logger\ErrorLogger::class,
+                    'logTable' => 'yii_log_error_logger',
+                    'checkIsSaveLog' => function () {
+                        //是否进行日志记录
+                        $pathInfo = explode('.', Yii::$app->request->pathInfo)[0];
+                        $notErrorLogActions = ArrayHelper::getValue(Yii::$app->params, 'notErrorLogActions', []);
+                        if (in_array($pathInfo, $notErrorLogActions)) {
+                            return false;
+                        }
+                        $responseStatus = Yii::$app->response->statusCode;
+                        $notErrorLogCodes = ArrayHelper::getValue(Yii::$app->params, 'notErrorLogCodes', []);
+                        if (in_array($responseStatus, $notErrorLogCodes)) {
+                            return false;
+                        }
+                        return true;
+                    }
+                ],
+            ],
+        ],
+];
+```
+- params.php
+```php
+[
+    'notErrorLogCodes' => [200],//不进行错误日志记录的responseCode数组
+    'notErrorLogActions' => [
+
+    ],
+];
+ ```      
+        
+
+- 添加控制器
+
+```php
+use Fanyawei\Yii2Logger\ErrorLogger;
+use Fanyawei\Yii2Logger\ErrorLogger\ActionLoggerIndex;
+use Fanyawei\Yii2Logger\ErrorLogger\ActionLoggerView;
+use yii\web\Controller;
+use Yii;
+
+class ErrorLoggerController extends Controller
+{
+
+    public array $summary = ['tag' => ''];
+
+    public function beforeAction($action): bool
+    {
+        $moduleID = $this->module->id;
+        $this->module = ErrorLogger::getDebugModule();
+        $this->module->id = $moduleID;
+        Yii::$app->setModule($this->module->id, $this->module);
+        $this->layout = '@yii/debug/views/layouts/main.php';
+        return parent::beforeAction($action);
+    }
+
+    public function actions():array
+    {
+        return array_merge(parent::actions(), [
+            'index' => ActionLoggerIndex::class,
+            'view' => ActionLoggerView::class,
+            'db-explain' => ActionLoggerView::class,
+        ]);
+    }
+}
+```
+
+
