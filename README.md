@@ -115,3 +115,74 @@ class ErrorLoggerController extends Controller
 ```
 
 
+#### 3,关键操作的请求日志记录
+
+- Controller.php控制器中
+
+```php
+class xxxController extends Controller
+{
+    /**
+     * @return array
+     */
+    public function behaviors(): array
+    {
+        return array_merge(parent::behaviors(), [
+            'logRequest' => [
+                'class' => RequestLoggerBehavior::class,
+                'actions' => [
+                    //默认的请求日志记录逻辑，列表不记录，删除记录，添加修改post请求时记录
+                    'index' => false,
+                    'create' => Yii::$app->request->isPost,
+                    'update' => function (ActionEvent $event) {
+                        return Yii::$app->request->isPost;
+                    },
+                    'delete' => true,
+                ],
+                'getParamCallback' => [
+                    '__default' => function (string $actionID) {
+                        $params = Yii::$app->request->getQueryParams();
+                        //过滤无效参数
+                        unset($params[Yii::$app->request->csrfParam]);
+                        unset($params['breadcrumbLinks']);
+                        return $params;
+                    },
+                ],
+                'postParamCallback' => [
+                    '__default' => function (string $actionID) {
+                        $params = Yii::$app->request->post();
+                        //过滤无效参数
+                        unset($params[Yii::$app->request->csrfParam]);
+                        unset($params['times']);
+                        return $params;
+                    },
+                ],
+                'getDataCode' => [
+                    '__default' => function (string $actionID) {
+                        $dataCode = -1;
+                        if (isset(Yii::$app->response->data['code'])) {
+                            $dataCode = Yii::$app->response->data['code'];
+                        } elseif (isset(Yii::$app->response->data['status'])) {
+                            $dataCode = Yii::$app->response->data['status'];
+                        }
+                        return intval($dataCode);
+                    },
+                ],
+            ]
+        ]);
+    }
+}
+```
+- 在日志中记录额外一些自定义数据
+```php
+$extraData = ['自定义数据......'];
+RequestLoggerBehavior::setExtraData($extraData);
+```
+
+- 直接在程序中指定要不要进行日志记录
+```php
+RequestLoggerBehavior::setRequestActionIsAddLog(true);
+RequestLoggerBehavior::setRequestActionIsAddLog(false);
+```
+
+
