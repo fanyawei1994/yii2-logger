@@ -50,7 +50,7 @@ class ActionLoggerView extends ErrorLoggerBaseAction
         return $this->controller->render('@yii/debug/views/default/view', [
             'tag' => $tag,
             'summary' => $this->summary,
-            'manifest' => $this->getManifest(),
+            'manifest' => $this->getManifest($tag),
             'panels' => $this->debugModule->panels,
             'activePanel' => $activePanel,
         ]);

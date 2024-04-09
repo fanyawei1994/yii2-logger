@@ -7,7 +7,6 @@
 namespace Fanyawei\Yii2Logger\ErrorLogger;
 
 use Fanyawei\Yii2Logger\ErrorLogger;
-use yii\base\BaseObject;
 use yii\BaseYii;
 use yii\data\ActiveDataProvider;
 use yii\debug\Module;
@@ -18,6 +17,12 @@ use yii\grid\GridView;
  */
 class ActionLoggerIndex extends ErrorLoggerBaseAction
 {
+
+    /**
+     * @var int 每页显示的数量
+     */
+    public int $pageSize = 20;
+
     /**
      * @var Module
      */
@@ -31,7 +36,7 @@ class ActionLoggerIndex extends ErrorLoggerBaseAction
         $dataProvider = new ActiveDataProvider([
             'query' => YiiLogErrorLoggerMeta::find(),
             'pagination' => [
-                'pageSize' => self::PAGE_SIZE,
+                'pageSize' => $this->pageSize,
             ],
             'sort' => [
                 'defaultOrder' => ['id' => SORT_DESC],
@@ -56,7 +61,7 @@ class ActionLoggerIndex extends ErrorLoggerBaseAction
             'panels' => $this->debugModule->panels,
             'dataProvider' => $dataProvider,
             'searchModel' => new YiiLogErrorLoggerMeta(),
-            'manifest' => $this->getManifest(),
+            'manifest' => [],
         ]);
     }
 }

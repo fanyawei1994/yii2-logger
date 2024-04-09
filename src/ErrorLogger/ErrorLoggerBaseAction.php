@@ -19,7 +19,6 @@ use yii\web\View;
  */
 class ErrorLoggerBaseAction extends Action
 {
-    public const PAGE_SIZE = 50;
     /**
      * @var Module
      */
@@ -58,10 +57,20 @@ class ErrorLoggerBaseAction extends Action
         $this->summary = $logContent['summary'];
     }
 
-    public function getManifest($limit = self::PAGE_SIZE)
+    public function getManifest(string $tag)
     {
-
-        $models = YiiLogErrorLoggerMeta::find()->limit($limit)->orderBy('id desc')->select('message')->column();
+        $tagID = YiiLogErrorLoggerMeta::find()
+            ->where(['category' => $tag])
+            ->select('id')
+            ->scalar();
+        if (empty($tagID)) {
+            exit('数据异常');
+        }
+        $models = YiiLogErrorLoggerMeta::find()
+            ->where(['between', 'id', $tagID - 5, $tagID + 5])
+            ->orderBy('id desc')
+            ->select('message')
+            ->column();
         $data = [];
         foreach ($models as $model){
             $logContent = unserialize($model);
